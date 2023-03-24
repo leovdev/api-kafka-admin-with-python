@@ -4,11 +4,11 @@ from src.exception.broker_not_running_exception import BrokerNotRunningException
 
 def verify_broker_running():
     try:
-        BOOTSTRAPSERVER_HOST = os.getenv('BOOTSTRAPSERVER_HOST')
+        BOOTSTRAPSERVER_HOST = os.environ.get('BOOTSTRAPSERVER_HOST')
         BOOTSTRAPSERVER_PORT = os.environ.get('BOOTSTRAPSERVER_PORT')
         URI = "{BOOTSTRAPSERVER_HOST:BOOTSTRAPSERVER_PORT}"
         result = subprocess.run(["kafka-broker-api-versions", "--bootstrap-server", 
-                                 "localhost:9094"],
+                                 BOOTSTRAPSERVER_HOST+":"+BOOTSTRAPSERVER_PORT],
                                  stdout=subprocess.PIPE, timeout=10,
                                  stderr=subprocess.PIPE, check=False)
         
@@ -32,6 +32,7 @@ def execute_command_get_topics():
         print("envars", BOOTSTRAPSERVER_HOST, BOOTSTRAPSERVER_PORT )
         return subprocess.run(["kafka-topics", 
                                     "--list", "--bootstrap-server", 
-                                    str(BOOTSTRAPSERVER_HOST)+":"+BOOTSTRAPSERVER_PORT],
+                                    BOOTSTRAPSERVER_HOST+":"+
+                                    BOOTSTRAPSERVER_PORT],
                                     stdout=subprocess.PIPE, timeout=10,
                                     stderr=subprocess.PIPE, check=False)

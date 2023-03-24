@@ -12,9 +12,9 @@ import subprocess
 import json
 import os
 
-app = FastAPI()
+listener = FastAPI()
 
-@app.get("/v1/topics")
+@listener.get("/v1/topics")
 def read_root(response: Response):
     try:
         service=IBrokersOps()
@@ -33,12 +33,12 @@ def read_root(response: Response):
             
 
 
-@app.get("/v1/broker/configs")
+@listener.get("/v1/broker/configs")
 def read_root():
     container_route = "/usr/local/kafka/bin/kafka-configs"
     route = "/opt/confluent-7.3.1/bin/kafka-topics"
     try:
-        result = subprocess.run(["sudo","/opt/confluent-7.3.1/bin/kafka-configs", 
+        result = subprocess.run(["kafka-configs", 
                                  "--bootstrap-server", "localhost:9094", "--all" ,
                                  "--entity-type", "brokers", "--entity-name", "1",
                                  "--describe"], stdout=subprocess.PIPE, timeout=10,
@@ -53,7 +53,7 @@ def read_root():
         return {"error": "World"}
     return {"Hello": "World", "result":result.stdout, "error":result.stderr}
 
-# @app.get("/v1/topics1")
+# @listener.get("/v1/topics1")
 # def read_root():
 #     try:
 #         result = subprocess.run(["sh","/usr/local/kafka/bin/kafka-configs.sh", "--bootstrap-server", "kafkaBroker1:9077", "--all" ,"--entity-type" ,"brokers", "--entity-name", "2", "--describe"], 
@@ -64,7 +64,3 @@ def read_root():
 
 # #Validaciones extremas con entrada, para no frenar el subprocess. 
 # # Por ejemplo verificar siexiste el broker con id4 antes del subprocess
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=80)

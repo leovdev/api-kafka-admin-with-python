@@ -4,7 +4,7 @@ import os
 
 from src.exception.broker_not_running_exception import BrokerNotRunningException
 from src.exception.kafka_admin_exception import KafkaAdminException
-from src.clients.kafka_client import verify_broker_running, execute_command_get_topics
+from src.client.kafka_client import verify_broker_running, execute_command_get_topics
 
 class BrokersOps():
 
