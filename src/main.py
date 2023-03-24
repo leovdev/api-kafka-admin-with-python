@@ -1,11 +1,13 @@
-from src.service.brokers_ops import BrokersOps
 from src.service.i_brokers_ops import IBrokersOps
 from src.exception.broker_not_running_exception import BrokerNotRunningException
 from src.exception.kafka_admin_exception import KafkaAdminException
 
 from typing import Union
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import PlainTextResponse
 import subprocess
 import json
 import os
@@ -13,30 +15,19 @@ import os
 app = FastAPI()
 
 @app.get("/v1/topics")
-def read_root():
+def read_root(response: Response):
     try:
         service=IBrokersOps()
-        return service.list_topics()
-    except BrokerNotRunningException as e:
-        response_returncode=500
-        response_message="Internal Server Error -"+str(e.message)
-        bodyResponse = None
-    except subprocess.TimeoutExpired as e:
-        response_returncode=500
-        response_message='Internal Server Error 2'
-        bodyResponse = None
-    except KafkaAdminException as e:
-        response_returncode=500
-        response_message='Internal Server Error 3'
-        bodyResponse = None
-    except Exception as e:
-        response_returncode=500
-        response_message='Internal Server Error 4'
-        bodyResponse = None
+        topics_list=service.list_topics()
+        if topics_list==None:
+            response.status_code=204
+        else:
+            response.status_code=200
+        return topics_list
     
-    return {"returnCode": response_returncode, 
-                "message": response_message,
-                "bodyResponse": bodyResponse}            
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Internal Server Error. "+str(e.message) if hasattr(e,'message') else None)     
     
     
             
