@@ -1,5 +1,7 @@
 from src.service.brokers_ops import BrokersOps
 from src.service.i_brokers_ops import IBrokersOps
+from src.exception.broker_not_running_exception import BrokerNotRunningException
+from src.exception.kafka_admin_exception import KafkaAdminException
 
 from typing import Union
 import uvicorn
@@ -12,10 +14,29 @@ app = FastAPI()
 
 @app.get("/v1/topics")
 def read_root():
-    service=IBrokersOps()
-    service.list_topics()
-    return True
-                
+    try:
+        service=IBrokersOps()
+        return service.list_topics()
+    except BrokerNotRunningException as e:
+        response_returncode=500
+        response_message="Internal Server Error -"+str(e.message)
+        bodyResponse = None
+    except subprocess.TimeoutExpired as e:
+        response_returncode=500
+        response_message='Internal Server Error 2'
+        bodyResponse = None
+    except KafkaAdminException as e:
+        response_returncode=500
+        response_message='Internal Server Error 3'
+        bodyResponse = None
+    except Exception as e:
+        response_returncode=500
+        response_message='Internal Server Error 4'
+        bodyResponse = None
+    
+    return {"returnCode": response_returncode, 
+                "message": response_message,
+                "bodyResponse": bodyResponse}            
     
     
             

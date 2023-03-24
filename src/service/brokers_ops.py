@@ -1,8 +1,10 @@
 import subprocess
 import os
 
-from src.utils.utils_ops import verify_broker_running
+
 from src.exception.broker_not_running_exception import BrokerNotRunningException
+from src.exception.kafka_admin_exception import KafkaAdminException
+from src.utils.utils_ops import verify_broker_running
 
 class BrokersOps():
 
@@ -18,7 +20,7 @@ class BrokersOps():
                                     "--list", "--bootstrap-server", 
                                     "{BOOTSTRAPSERVER_HOST}:{BOOTSTRAPSERVER_PORT}"],
                                     stdout=subprocess.PIPE, timeout=10,
-                                    stderr=subprocess.PIPE, check=True)
+                                    stderr=subprocess.PIPE, check=False)
             
             if (result != None and result.returncode == 0):
                 topics = result.stdout.splitlines()
@@ -34,27 +36,21 @@ class BrokersOps():
                     bodyResponse = {'topics' : result.stdout.splitlines()}
 
             elif (result.returncode != 0):
-                print('returncode', result.returncode)
-                print(result.stderr)
-                response_returncode=500
-                response_message='Internal Server Error'
-                bodyResponse = None
+                print("concrete 0")
+                raise KafkaAdminException()
 
-            
-            print("returnCode: "+ str(result.returncode))
         except BrokerNotRunningException as e:
-            print("entro aquí")
-            raise BrokerNotRunningException("")
+            print("concrete 1")
+            raise BrokerNotRunningException(e)
         except subprocess.TimeoutExpired as e:
-            response_returncode=500
-            response_message='Internal Server Error, timeout'
-            bodyResponse = None
-        # except Exception as e:
-        #     response_returncode=500
-        #     response_message='Internal Server Error'
-        #     bodyResponse = None
-        #     print("An exception ocurred, exception x", e)
-        #     print(result.stderr)
+            print("concrete 2")
+            raise subprocess.TimeoutExpired(e)
+        except KafkaAdminException as e:
+            print("concrete 3")
+            raise KafkaAdminException(e)
+        except Exception as e:
+            print("concrete 4")
+            raise Exception(e)
                 
         return {"returnCode": response_returncode, 
                 "message": response_message,
