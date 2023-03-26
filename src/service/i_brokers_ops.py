@@ -28,6 +28,15 @@ class IBrokersOps():
     def parse_stdout(self, result):
         return BrokersOps.parse_stdout(self, result)
     
+    def get_topics_from_broker_detailed(self):
+        return BrokersOps.get_topics_from_broker_detailed(self)
+    
+    def assign_value_detailed(self, result):
+        return BrokersOps.assign_value_detailed(self, result)
+
+    def parse_stdout_detailed(self, result):
+        return BrokersOps.parse_stdout_detailed(self, result)
+    
     def insert_topic(self, topic):
         return BrokersOps.insert_topic(self, topic)
     

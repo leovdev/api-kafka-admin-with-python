@@ -1,5 +1,7 @@
 import subprocess
 import os
+import regex
+
 from src.exception.broker_not_running_exception import BrokerNotRunningException
 from src.exception.kafka_client_exception import KafkaClientException
 
@@ -34,6 +36,12 @@ def execute_command_get_topics():
                                     stdout=subprocess.PIPE, timeout=10,
                                     stderr=subprocess.PIPE, check=False)
 
+def execute_command_get_topics_detailed():
+        return subprocess.run(["kafka-topics", 
+                                    "--describe", "--bootstrap-server", URI],
+                                    stdout=subprocess.PIPE, timeout=10,
+                                    stderr=subprocess.PIPE, check=False)
+
 def execute_command_insert_topic(topic):
         commands = ["kafka-topics", "--create", "--bootstrap-server", URI]
         commands.append("--topic")
@@ -63,9 +71,19 @@ def execute_command_insert_topic(topic):
             
             if result.returncode != 0:
                 print("Error exit with Non-Zero code", result.stderr)
-                raise KafkaClientException("Your Config keys or values should be reviewed", result.stderr)
-            else:
-                 print("Topic inserted successfully", result.returncode)
+
+                if str(result.stderr).find('already exists.') != -1:
+                    raise KafkaClientException("Topic already exists")
+                elif str(result.stderr).find('Unknown topic config name:') != -1:
+                    regexword = r'\bUnknown topic config name:\s+\K\S+'
+                    unrecognize_config = regex.search(regexword, str(result.stderr))
+                    error_config = unrecognize_config[0]
+                    cutIndex = error_config.find(f"\n")
+
+                    raise KafkaClientException(f"Unknown topic config name: {error_config[0:cutIndex-1]}")
+                raise KafkaClientException(f"Error: {result.stderr}")
+            
+            print("Topic inserted successfully", result.returncode)
                  
         except KafkaClientException as e:
              raise KafkaClientException(e)
@@ -73,7 +91,7 @@ def execute_command_insert_topic(topic):
              print("Command insert Excep", e)
              raise Exception(e)
         
-        return True
+        return "Topic created"
 
 def execute_command_update_topic(topic):
         commands = ["kafka-topics", "--create", "--bootstrap-server", URI]

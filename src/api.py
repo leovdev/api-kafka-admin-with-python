@@ -17,7 +17,8 @@ def read_root(response: Response):
     try:
         service=IBrokersOps()
         topics_list=service.list_topics()
-        if topics_list['kafkaBroker']==None and topics_list['mongoDB']==None:
+         
+        if topics_list['database']==None and topics_list['broker']==None:
             response.status_code=204
         else:
             response.status_code=200
@@ -33,12 +34,15 @@ def create_topic(topic: TopicBaseSchema,response: Response):
         json_compatible_item_data = jsonable_encoder(topic)
         
         service=IBrokersOps()
-        topics_list=service.insert_topic(json_compatible_item_data)
-        if topics_list['kafkaBroker']==None and topics_list['mongoDB']==None:
-            response.status_code=204
-        else:
-            response.status_code=200
-        return topics_list
+        response=service.insert_topic(json_compatible_item_data)
+        print(response)
+
+        return response
+        # if topics_list['kafkaBroker']==None and topics_list['mongoDB']==None:
+        #     response.status_code=204
+        # else:
+        #     response.status_code=200
+        # return topics_list
     
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
