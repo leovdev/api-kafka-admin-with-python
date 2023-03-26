@@ -14,13 +14,8 @@ server = FastAPI()
 @server.get("/v1/topics")
 def read_root(response: Response):
     try:
-        print("LLegué al api ")
-        a = IRepository()
-        b=a.get_topics()
-        print(a, "in main")
-        print("despues api repo")
         service=IBrokersOps()
-        topics_list=service.list_topics() or b
+        topics_list=service.list_topics()
         if topics_list==None:
             response.status_code=204
         else:

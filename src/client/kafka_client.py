@@ -14,18 +14,18 @@ def verify_broker_running():
                                  stderr=subprocess.PIPE, check=False)
         
         if result.returncode != 0:
-            print("util broker not 0 ", result.stderr)
-            raise BrokerNotRunningException("Broker may not be running, report to the administrator")
+            print("Error exit with Non-Zero code", result.stderr)
+            raise BrokerNotRunningException("Can not connect to the broker", result.stderr)
         
+        return True
     except subprocess.TimeoutExpired as e:
-        raise subprocess.TimeoutExpired(e)
+        print("TimeOutException connecting to the broker", e)
     except BrokerNotRunningException as e:
-        print("util broker not 1", e)
-        raise BrokerNotRunningException(e)
+        print("Can not connect to the broker", e)
     except Exception as e:
-        print("util broker not 2",e)
-        raise BrokerNotRunningException()
-    return True
+        print("Unknow exception",e)
+    
+    return False
 
 def execute_command_get_topics():
         return subprocess.run(["kafka-topics", 

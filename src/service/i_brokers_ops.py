@@ -22,3 +22,12 @@ class IBrokersOps():
         except Exception as e:
             print("abstrac 4")
             raise Exception(e)
+
+    def get_topics_from_broker(self):
+        return BrokersOps.get_topics_from_broker(self)
+    
+    def assign_value(self, result):
+        return BrokersOps.assign_value(self, result)
+
+    def parse_stdout(self, result):
+        return BrokersOps.parse_stdout(self, result)
