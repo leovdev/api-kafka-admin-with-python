@@ -7,14 +7,13 @@ from pymongo.collection import ReturnDocument
 from src.serializers.topic_serializers import topicEntity, topicListEntity
 from src.exception.mongo_connection_exception import MongoConnectionException
 from src.exception.database_connection_exception import DatabaseConnectionException
+from src.exception.database_ops_exception import DatabaseOpsException
 
 MONGODB_HOST = os.environ.get('MONGODB_HOST') or 'localhost'
 MONGODB_PORT = os.environ.get('MOONGODB_PORT') or '27017'
 URI = f'mongodb://{MONGODB_HOST}:{MONGODB_PORT}/'
     
 class MongoDB():
-    
-    
     def __init__(self) -> None:
         pass
     
@@ -64,37 +63,41 @@ class MongoDB():
         return topics_list
     
 
-    def insert_topic(self):
+    def insert_topic(self, topic):
         try:
+            
             client = self.connect()
             db = client.kafka_topics
-            database_response = db.topics.find({"name":"orange"})
+            database_response = db.topics.find({"name":topic['name']})
             count = len(list(database_response))
             exists= True if count>0 else False
             
             if (not exists):
-                db.topics.insert_one({"name":"papay"})
+                db.topics.insert_one(topic)
+
+                print("interg",{"name":topic['name']})
                 client.close()
-                return True
+                return "Topic created"
+            else:
+                return "Topic already exists"
         except InvalidName as e:
-            print(e,"cause 0", e.cause)
+            pass
         except MongoConnectionException as e:
-            print(e,"cause 1", e.cause)
-            raise MongoConnectionException()
+            raise DatabaseOpsException(e)
         except Exception as e:
-            print(e,"cause 2")
+            raise DatabaseOpsException(e)
         
-        return False
+        return "Topic could not be created"
     
-    def update_topic(self):
+    def update_topic(self, topic):
         try:
             client = self.connect()
             print("respuesta 1")
             db = client.kafka_topics
             print("respuesta 2")
             topics = db.topics.find_one_and_update(
-                {'name':'apple'},
-                {'$set': {'name':'apple1'}},
+                {'name':topic['name']},
+                {'$set': topic},
                 upsert= True,
                 return_document=ReturnDocument.AFTER
             )
@@ -110,4 +113,23 @@ class MongoDB():
         client.close()
         return None
 
+    def delete_topic(self, topic_name):
+        try:
+            client = self.connect()
+            print("respuesta 1")
+            db = client.kafka_topics
+            print("respuesta 2")
+            topics = db.topics.delete_one({'name':topic_name})
+
+            print("respuesta",dir(topics), "id ")
+        except InvalidName as e:
+            print(e,"cause 0", e.cause)
+        except MongoConnectionException as e:
+            print(e,"cause 1", e.cause)
+            raise MongoConnectionException
+        except Exception as e:
+            print(e,"cause 2")
+            topics_list=None
+        client.close()
+        return None
         

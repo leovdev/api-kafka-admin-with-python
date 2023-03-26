@@ -8,6 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import PlainTextResponse
 import subprocess
 import json 
+from src.schema.schemas import TopicBaseSchema
 
 server = FastAPI()
 
@@ -16,7 +17,24 @@ def read_root(response: Response):
     try:
         service=IBrokersOps()
         topics_list=service.list_topics()
-        if topics_list==None:
+        if topics_list['kafkaBroker']==None and topics_list['mongoDB']==None:
+            response.status_code=204
+        else:
+            response.status_code=200
+        return topics_list
+    
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Internal Server Error. "+str(e.message) if hasattr(e,'message') else None)     
+
+@server.post("/v1/topics/create")
+def create_topic(topic: TopicBaseSchema,response: Response):
+    try:
+        json_compatible_item_data = jsonable_encoder(topic)
+        
+        service=IBrokersOps()
+        topics_list=service.insert_topic(json_compatible_item_data)
+        if topics_list['kafkaBroker']==None and topics_list['mongoDB']==None:
             response.status_code=204
         else:
             response.status_code=200

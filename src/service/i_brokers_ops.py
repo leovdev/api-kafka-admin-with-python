@@ -11,16 +11,12 @@ class IBrokersOps():
         try:
             return BrokersOps.list_topics(self)
         except BrokerNotRunningException as e:
-            print("abstrac 1")
             raise BrokerNotRunningException(e)
         except KafkaAdminException as e:
-            print("abstrac 2")
             raise KafkaAdminException(e)
         except subprocess.TimeoutExpired as e:
-            print("abstrac 3")
             raise subprocess.TimeoutExpired(e)
         except Exception as e:
-            print("abstrac 4")
             raise Exception(e)
 
     def get_topics_from_broker(self):
@@ -31,3 +27,12 @@ class IBrokersOps():
 
     def parse_stdout(self, result):
         return BrokersOps.parse_stdout(self, result)
+    
+    def insert_topic(self, topic):
+        return BrokersOps.insert_topic(self, topic)
+    
+    def update_topic(self, topic):
+        return BrokersOps.update_topic(self, topic)
+    
+    def delete_topic(self, topic):
+        return BrokersOps.delete_topic(self, topic)
