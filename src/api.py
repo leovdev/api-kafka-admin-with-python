@@ -8,16 +8,16 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import PlainTextResponse
 import subprocess
 import json 
-from src.schema.schemas import TopicBaseSchema
+from src.schema.schemas import TopicBaseSchema, TopicUpdateBaseSchema
 
 server = FastAPI()
 
 @server.get("/v1/topics")
-def read_root(response: Response):
+def get_topics(response: Response):
     try:
         service=IBrokersOps()
         topics_list=service.list_topics()
-         
+
         if topics_list['database']==None and topics_list['broker']==None:
             response.status_code=204
         else:
@@ -38,16 +38,25 @@ def create_topic(topic: TopicBaseSchema,response: Response):
         print(response)
 
         return response
-        # if topics_list['kafkaBroker']==None and topics_list['mongoDB']==None:
-        #     response.status_code=204
-        # else:
-        #     response.status_code=200
-        # return topics_list
     
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             detail="Internal Server Error. "+str(e.message) if hasattr(e,'message') else None)     
  
+@server.delete("/v1/topics/delete/topic/{topic}")
+def delete_topic(topic: str, Response: Response):
+    try:
+        service=IBrokersOps()
+        response=service.delete_topic(topic)
+        
+        return response
+    
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Internal Server Error. "+str(e.message) if hasattr(e,'message') else None)     
+
+
 @server.get("/v1/broker/configs")
 def read_root():
     container_route = "/usr/local/kafka/bin/kafka-configs"
@@ -67,6 +76,20 @@ def read_root():
         print("An exception ocurred", e)
         return {"error": "World"}
     return {"Hello": "World", "result":result.stdout, "error":result.stderr}
+
+@server.put("/v1/topics/update/")
+def update_topic(topic: TopicUpdateBaseSchema,response: Response):
+    try:
+        json_compatible_item_data = jsonable_encoder(topic)
+        service=IBrokersOps()
+        response=service.update_topic(json_compatible_item_data)
+        print(response)
+
+        return response
+    
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Internal Server Error. "+str(e.message) if hasattr(e,'message') else None)    
 
 # @server.get("/v1/topics1")
 # def read_root():

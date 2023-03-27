@@ -5,9 +5,9 @@ from bson.objectid import ObjectId
 
 class TopicBaseSchema(BaseModel):
     name: str
-    partitions: int
-    replicationFactor: int
-    configOverrides: List
+    partitions: int = None
+    replicationFactor: int = None
+    configOverrides: List = None
 
     class Config:
         orm_mode = True
@@ -24,3 +24,16 @@ class TopicResponse(TopicBaseSchema):
 class ListPostResponse(BaseModel):
     results: int
     topics: List[TopicResponse]
+
+class TopicUpdateBaseSchema(BaseModel):
+    name: str
+    partitions: int = None
+    replicationFactor: int = None
+    addConfigOverrides: List or None = None
+    removeConfigOverrides: List = None
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}

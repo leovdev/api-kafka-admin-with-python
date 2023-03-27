@@ -148,12 +148,15 @@ class BrokersOps():
         repository = IRepository()
         try:
             databaseResult = repository.insert_topic(topic)
-            brokerResponse = execute_command_insert_topic(topic)
+            
+            is_broker_running = verify_broker_running()
+            if is_broker_running:
+                brokerResponse = execute_command_insert_topic(topic)
         except DatabaseOpsException as e:
             print(e)
             databaseResult = f"{e}"
         except KafkaClientException as e:
-            print("kafka client exception",e)
+            print("kafka client exception ",e)
             brokerResponse = f"{e}"
         except Exception as e:
             print("insert service",e)
@@ -161,22 +164,37 @@ class BrokersOps():
         
         return {"database":databaseResult, "broker":brokerResponse}
     
-    def update_topic(self, topic):
-        repository = IRepository()
-
-        result = repository.update_topic(topic)
-
-        brokerResponse = execute_command_update_topic(topic)
-        
-        return True
-    
     def delete_topic(self, topic):
         repository = IRepository()
-
-        result = repository.delete_topic(topic)
-
-        brokerResponse = execute_command_delete_topic(topic)
-
-        return True
-
+        try:
+            database_response = repository.delete_topic_db(topic)
+            
+            is_broker_running = verify_broker_running()
+            if is_broker_running:
+                broker_response = execute_command_delete_topic(topic)
+        except KafkaClientException as e:
+            broker_response = f"{e}"
+        except DatabaseOpsException as e:
+            database_response = f"{e}"
+        except Exception as e:
+            raise Exception(e)
         
+        return {"database":database_response, "broker":broker_response}
+
+    def update_topic(self, topic):
+        repository = IRepository()
+        try:
+            database_response = repository.update_topic(topic)
+            is_broker_running = verify_broker_running()
+            if is_broker_running:
+                broker_response = execute_command_update_topic(topic)
+
+        except KafkaClientException as e:
+            broker_response = f"{e}"
+        except DatabaseOpsException as e:
+            database_response = f"{e}"
+        except Exception as e:
+            print(e)
+            raise Exception(e)
+        
+        return {"database":database_response, "broker":broker_response}

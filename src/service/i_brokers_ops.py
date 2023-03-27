@@ -1,4 +1,3 @@
-
 import subprocess
 
 from src.service.brokers_ops import BrokersOps
@@ -8,16 +7,7 @@ from src.exception.kafka_admin_exception import KafkaAdminException
 class IBrokersOps():
    
     def list_topics(self):
-        try:
-            return BrokersOps.list_topics(self)
-        except BrokerNotRunningException as e:
-            raise BrokerNotRunningException(e)
-        except KafkaAdminException as e:
-            raise KafkaAdminException(e)
-        except subprocess.TimeoutExpired as e:
-            raise subprocess.TimeoutExpired(e)
-        except Exception as e:
-            raise Exception(e)
+        return BrokersOps.list_topics(self)
 
     def get_topics_from_broker(self):
         return BrokersOps.get_topics_from_broker(self)

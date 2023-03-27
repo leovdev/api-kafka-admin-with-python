@@ -10,10 +10,10 @@ class IRepository():
         database = MongoDB()
         return database.insert_topic(topic)
     
-    def update_topic(self):
+    def update_topic(self, topic):
         database = MongoDB()
-        return database.update_topic()
+        return database.update_topic_db(topic)
     
-    def delete_topic(self):
+    def delete_topic_db(self,topic):
         database = MongoDB()
-        return database.delete_topic()
+        return database.delete_topic_db(topic)
